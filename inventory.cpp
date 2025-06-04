@@ -100,3 +100,65 @@ public:
     }
 };
 
+// Structure for an order
+struct Order {
+    int orderID;
+    int itemID;
+    int quantity;
+    int priority; // Lower number = higher priority (min-heap behavior)
+    Order(int _orderID, int _itemID, int _qty, int _priority)
+        : orderID(_orderID), itemID(_itemID), quantity(_qty), priority(_priority) {}
+};
+
+// Comparator for min-heap based on priority; if equal priority, lower orderID first
+struct CompareOrder {
+    bool operator()(const Order& a, const Order& b) {
+        if (a.priority == b.priority)
+            return a.orderID > b.orderID;
+        return a.priority > b.priority;
+    }
+};
+
+// Order manager using priority queue
+class OrderManager {
+private:
+    priority_queue<Order, vector<Order>, CompareOrder> pq;
+    int nextOrderID;
+
+public:
+    OrderManager() : nextOrderID(1) {}
+
+    // Place a new order
+    void placeOrder(int itemID, int qty, int priority) {
+        Order newOrder(nextOrderID++, itemID, qty, priority);
+        pq.push(newOrder);
+        cout << "Placed order ID " << newOrder.orderID << " for item ID " << itemID << " (qty: " << qty << ", priority: " << priority << ")\n";
+    }
+
+    // Process next order (highest priority = lowest priority number)
+    bool processNextOrder(InventoryList& inventory) {
+        if (pq.empty()) {
+            cout << "No pending orders.\n";
+            return false;
+        }
+        Order top = pq.top();
+        pq.pop();
+        cout << "Processing order ID " << top.orderID << " (item ID: " << top.itemID << ", qty: " << top.quantity << ", priority: " << top.priority << ")\n";
+        InventoryItem* item = inventory.getItem(top.itemID);
+        if (!item) {
+            cout << "Item ID " << top.itemID << " not available in inventory. Order cannot be fulfilled.\n";
+            return false;
+        }
+        if (top.quantity > item->quantity) {
+            cout << "Not enough quantity for item ID " << top.itemID << ". Available: " << item->quantity << ".\n";
+            cout << "Order partially fulfilled: Selling " << item->quantity << ". Remaining unfulfilled: " << (top.quantity - item->quantity) << "\n";
+            inventory.reduceQuantity(top.itemID, item->quantity);
+            return true;
+        }
+        // Enough stock
+        inventory.reduceQuantity(top.itemID, top.quantity);
+        cout << "Order fulfilled completely.\n";
+        return true;
+    }
+
+    
