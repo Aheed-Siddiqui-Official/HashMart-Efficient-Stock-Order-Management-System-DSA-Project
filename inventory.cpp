@@ -48,4 +48,55 @@ public:
         }
     }
 
-    
+    // Remove item completely
+    void removeItem(int id) {
+        if (!itemMap.count(id)) {
+            cout << "Item ID " << id << " not found.\n";
+            return;
+        }
+        InventoryItem* node = itemMap[id];
+        if (node->prev) node->prev->next = node->next;
+        if (node->next) node->next->prev = node->prev;
+        if (node == head) head = node->next;
+        if (node == tail) tail = node->prev;
+        itemMap.erase(id);
+        cout << "Removed item ID " << id << " (" << node->name << ")\n";
+        delete node;
+    }
+
+    // Reduce quantity when sold; remove if quantity becomes 0
+    void reduceQuantity(int id, int soldQty) {
+        if (!itemMap.count(id)) {
+            cout << "Item ID " << id << " not found.\n";
+            return;
+        }
+        InventoryItem* node = itemMap[id];
+        if (soldQty > node->quantity) soldQty = node->quantity;
+        node->quantity -= soldQty;
+        cout << "Sold " << soldQty << " of item ID " << id << ". Remaining: " << node->quantity << "\n";
+        if (node->quantity == 0) {
+            cout << "Item ID " << id << " is sold out. Removing from inventory.\n";
+            removeItem(id);
+        }
+    }
+
+    // Display all inventory items
+    void displayInventory() const {
+        if (!head) {
+            cout << "Inventory is empty.\n";
+            return;
+        }
+        cout << "Current Inventory:\n";
+        cout << "ID\tName\tQuantity\tPrice\n";
+        for (InventoryItem* curr = head; curr; curr = curr->next) {
+            cout << curr->id << "\t" << curr->name << "\t" << curr->quantity << "\t" << curr->price << "\n";
+        }
+    }
+
+    // Lookup item by ID
+    InventoryItem* getItem(int id) const {
+        if (itemMap.count(id)) return itemMap.at(id);
+        return nullptr;
+    }
+};
+
