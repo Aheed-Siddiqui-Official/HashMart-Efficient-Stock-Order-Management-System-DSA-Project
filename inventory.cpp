@@ -161,4 +161,85 @@ public:
         return true;
     }
 
-    
+    // Display pending orders
+    void displayPendingOrders() const {
+        if (pq.empty()) {
+            cout << "No pending orders.\n";
+            return;
+        }
+        // Copy to temp to display without modifying
+        priority_queue<Order, vector<Order>, CompareOrder> temp = pq;
+        cout << "Pending Orders:\n";
+        cout << "OrderID\tItemID\tQuantity\tPriority\n";
+        while (!temp.empty()) {
+            Order o = temp.top(); temp.pop();
+            cout << o.orderID << "\t" << o.itemID << "\t" << o.quantity << "\t" << o.priority << "\n";
+        }
+    }
+};
+
+// Text-based menu
+void displayMenu() {
+    cout << "\n=== Inventory & Order Management ===\n";
+    cout << "1. Add or Update Inventory Item\n";
+    cout << "2. Remove Inventory Item\n";
+    cout << "3. Display Inventory\n";
+    cout << "4. Place Order\n";
+    cout << "5. Process Next Order\n";
+    cout << "6. Display Pending Orders\n";
+    cout << "7. Search Item by ID\n";
+    cout << "8. Exit\n";
+    cout << "Enter your choice: ";
+}
+
+int main() {
+    InventoryList inventory;
+    OrderManager orderManager;
+    int choice;
+    while (true) {
+        displayMenu();
+        cin >> choice;
+        if (choice == 1) {
+            int id, qty;
+            string name;
+            double price;
+            cout << "Enter item ID: "; cin >> id;
+            cin.ignore();
+            cout << "Enter item name: "; getline(cin, name);
+            cout << "Enter quantity: "; cin >> qty;
+            cout << "Enter price: "; cin >> price;
+            inventory.addOrUpdateItem(id, name, qty, price);
+        } else if (choice == 2) {
+            int id;
+            cout << "Enter item ID to remove: "; cin >> id;
+            inventory.removeItem(id);
+        } else if (choice == 3) {
+            inventory.displayInventory();
+        } else if (choice == 4) {
+            int itemID, qty, priority;
+            cout << "Enter item ID to order: "; cin >> itemID;
+            cout << "Enter quantity: "; cin >> qty;
+            cout << "Enter priority (lower number = higher priority): "; cin >> priority;
+            orderManager.placeOrder(itemID, qty, priority);
+        } else if (choice == 5) {
+            orderManager.processNextOrder(inventory);
+        } else if (choice == 6) {
+            orderManager.displayPendingOrders();
+        } else if (choice == 7) {
+            int id;
+            cout << "Enter item ID to search: "; cin >> id;
+            InventoryItem* item = inventory.getItem(id);
+            if (item) {
+                cout << "Item found: ID " << item->id << ", Name: " << item->name << ", Quantity: " << item->quantity << ", Price: " << item->price << "\n";
+            } else {
+                cout << "Item ID " << id << " not found.\n";
+            }
+        } else if (choice == 8) {
+            cout << "Exiting...\n";
+            break;
+        } else {
+            cout << "Invalid choice. Please try again.\n";
+        }
+    }
+    return 0;
+}
