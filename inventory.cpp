@@ -192,6 +192,8 @@ void displayMenu() {
     cout << "Enter your choice: ";
 }
 
+//main function
+
 int main() {
     InventoryList inventory;
     OrderManager orderManager;
